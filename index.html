@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<!-- Required meta tags -->
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+		<!-- Bootstrap CSS -->
+		<link
+			href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css"
+			rel="stylesheet"
+			integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3"
+			crossorigin="anonymous"
+		/>
+
+		<title>Pocheol Newfolder</title>
+		<link rel="stylesheet" href="style.css" />
+	</head>
+
+	<body>
+		<nav class="navbar navbar-expand-lg navbar-light nav-distance">
+			<div class="container-fluid">
+				<a class="navbar-brand" href="#">닮은꼴 찾기</a>
+				<button
+					class="navbar-toggler"
+					type="button"
+					data-bs-toggle="collapse"
+					data-bs-target="#navbarSupportedContent"
+					aria-controls="navbarSupportedContent"
+					aria-expanded="false"
+					aria-label="Toggle navigation"
+				>
+					<span class="navbar-toggler-icon"></span>
+				</button>
+				<div class="collapse navbar-collapse" id="navbarSupportedContent">
+					<ul class="navbar-nav me-auto mb-2 mb-lg-0">
+						<li class="nav-item">
+							<a class="nav-link active" aria-current="page" href="#">Home</a>
+						</li>
+						<li class="nav-item">
+							<a class="nav-link" href="#">Link</a>
+						</li>
+						<li class="nav-item dropdown">
+							<a
+								class="nav-link dropdown-toggle"
+								href="#"
+								id="navbarDropdown"
+								role="button"
+								data-bs-toggle="dropdown"
+								aria-expanded="false"
+							>
+								Dropdown
+							</a>
+							<ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+								<li><a class="dropdown-item" href="#">Action</a></li>
+								<li><a class="dropdown-item" href="#">Another action</a></li>
+								<li><hr class="dropdown-divider" /></li>
+								<li><a class="dropdown-item" href="#">Something else here</a></li>
+							</ul>
+						</li>
+						<li class="nav-item">
+							<a class="nav-link disabled">Disabled</a>
+						</li>
+					</ul>
+					<form class="d-flex">
+						<input
+							class="form-control me-2"
+							type="search"
+							placeholder="Search"
+							aria-label="Search"
+						/>
+						<button class="btn btn-outline-success" type="submit">Search</button>
+					</form>
+				</div>
+			</div>
+		</nav>
+		<section class="section">
+			<h1 class="warning">시작 전 새로고침을 눌러주세요!!!</h1>
+			<h1 class="title">인공지능 닮은꼴 찾기</h1>
+			<h2 class="subtitle">나는 어떤 연예인과 닮았을까?</h2>
+			<h3 class="subsubtitle">인공지능이 공부한 연예인이 매우 한정적입니다!!</h3>
+		</section>
+
+		<script
+			class="jsbin"
+			src="https://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"
+		></script>
+		<div class="file-upload">
+			<button
+				class="file-upload-btn"
+				type="button"
+				onclick="$('.file-upload-input').trigger( 'click' )"
+			>
+				Add Image
+			</button>
+
+			<div class="image-upload-wrap">
+				<input
+					class="file-upload-input"
+					type="file"
+					onchange="readURL(this);"
+					accept="image/*"
+				/>
+				<div class="drag-text">
+					<h3>Drag and drop a file or select add Image</h3>
+				</div>
+			</div>
+			<div class="file-upload-content">
+				<img class="file-upload-image" id="face-image" src="#" alt="your image" />
+
+				<div id="label-container"></div>
+				<div class="image-title-wrap">
+					<button type="button" onclick="removeUpload()" class="remove-image">
+						Remove <span class="image-title">Uploaded Image</span>
+					</button>
+				</div>
+			</div>
+		</div>
+		<div id="webcam-container"></div>
+		<script
+			src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js"
+			integrity="sha384-7+zCNj/IqJ95wo16oMtfsKbZ9ccEh31eOz1HGyDuCQ6wgnyJNSYdrPa03rtR1zdB"
+			crossorigin="anonymous"
+		></script>
+		<script
+			src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js"
+			integrity="sha384-QJHtvGhmr9XOIpI6YVutG+2QOK9T+ZnN4kzFN1RtK3zEFEIsxhlmWl5/YESvpZ13"
+			crossorigin="anonymous"
+		></script>
+		<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.3.1/dist/tf.min.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8/dist/teachablemachine-image.min.js"></script>
+		<script>
+			function readURL(input) {
+				if (input.files && input.files[0]) {
+					var reader = new FileReader();
+
+					reader.onload = function (e) {
+						$('.image-upload-wrap').hide();
+
+						$('.file-upload-image').attr('src', e.target.result);
+						$('.file-upload-content').show();
+
+						$('.image-title').html(input.files[0].name);
+					};
+
+					reader.readAsDataURL(input.files[0]);
+					init().then(() => {
+						console.log('hello');
+						predict();
+					});
+				} else {
+					removeUpload();
+				}
+			}
+
+			function removeUpload() {
+				$('.file-upload-input').replaceWith($('.file-upload-input').clone());
+				$('.file-upload-content').hide();
+				$('.image-upload-wrap').show();
+			}
+			$('.image-upload-wrap').bind('dragover', function () {
+				$('.image-upload-wrap').addClass('image-dropping');
+			});
+			$('.image-upload-wrap').bind('dragleave', function () {
+				$('.image-upload-wrap').removeClass('image-dropping');
+			});
+		</script>
+		<script type="text/javascript">
+			// More API functions here:
+			// https://github.com/googlecreativelab/teachablemachine-community/tree/master/libraries/image
+
+			// the link to your model provided by Teachable Machine export panel
+			const URL = 'https://teachablemachine.withgoogle.com/models/8G7cXyZsf/';
+
+			let model, webcam, labelContainer, maxPredictions;
+
+			// Load the image model and setup the webcam
+			async function init() {
+				const modelURL = URL + 'model.json';
+				const metadataURL = URL + 'metadata.json';
+
+				// load the model and metadata
+				// Refer to tmImage.loadFromFiles() in the API to support files from a file picker
+				// or files from your local hard drive
+				// Note: the pose library adds "tmImage" object to your window (window.tmImage)
+				model = await tmImage.load(modelURL, metadataURL);
+				maxPredictions = model.getTotalClasses();
+				labelContainer = document.getElementById('label-container');
+				for (let i = 0; i < maxPredictions; i++) {
+					// and class labels
+					labelContainer.appendChild(document.createElement('div'));
+				}
+			}
+			// run the webcam image through the image model
+			async function predict() {
+				// predict can take in an image, video or canvas html element
+				var image = document.getElementById('face-image');
+				const prediction = await model.predict(image, false);
+				prediction.sort((b, a) => parseFloat(a.probability) - parseFloat(b.probability));
+				//console.log(prediction[0].className);
+				var resultTitle, resultExplain, resultCeleb;
+				var title =
+					"<div class='" +
+					prediction[0].className +
+					"-animal-title'>" +
+					resultTitle +
+					'</div>';
+				var explain = "<div class='animal-explain pt-2'>" + resultExplain + '</div>';
+				var celeb =
+					"<div class='" +
+					prediction[0].className +
+					"-animal-celeb pt-2 pb-2'>" +
+					resultCeleb +
+					'</div>';
+				$('.result-message').html(title + explain + celeb);
+				var barWidth;
+				for (let i = 0; i < maxPredictions; i++) {
+					if (prediction[i].probability.toFixed(2) > 0.1) {
+						barWidth = Math.round(prediction[i].probability.toFixed(2) * 100) + '%';
+					} /*else if (prediction[i].probability.toFixed(2) >= 0.01) {
+						barWidth = '4%';
+					} else {
+						barWidth = '2%';
+					}*/
+					var labelTitle;
+					if (prediction[i].probability >= 0.01) {
+						switch (prediction[i].className) {
+							//if(prediction[i].probability > 0.01)
+							case '홍진경':
+								labelTitle = '홍진경';
+								break;
+							case '강호동':
+								labelTitle = '강호동';
+								break;
+							case '강동원':
+								labelTitle = '강동원';
+								break;
+							case '고창석':
+								labelTitle = '공유';
+								break;
+							case '권상우':
+								labelTitle = '김민경';
+								break;
+							case '김수현':
+								labelTitle = '김수현';
+								break;
+							case '김숙':
+								labelTitle = '김숙';
+								break;
+							case '김영희':
+								labelTitle = '김영희';
+								break;
+							case '김태희':
+								labelTitle = '김태희';
+								break;
+							case '나문희':
+								labelTitle = '나문희';
+								break;
+							case '나연':
+								labelTitle = '나연';
+								break;
+							case '다현':
+								labelTitle = '다현';
+								break;
+							case '류승범+':
+								labelTitle = '류승범';
+								break;
+							case '류준열':
+								labelTitle = '류준열';
+								break;
+							case '미나':
+								labelTitle = '미나';
+								break;
+							case '박나래':
+								labelTitle = '박나래';
+								break;
+							case '박명수':
+								labelTitle = '박명수';
+								break;
+							case '박보영':
+								labelTitle = '박보영';
+								break;
+							case '박진영':
+								labelTitle = '박진영';
+								break;
+							case '정우':
+								labelTitle = '정우';
+								break;
+							case '블랙핑크 리사':
+								labelTitle = '블랙핑크 리사';
+								break;
+							case '플랙핑크 지수':
+								labelTitle = '블랙핑크 지수';
+								break;
+							case '트와이스 사나':
+								labelTitle = '트와이스 사나';
+								break;
+							case '소지섭':
+								labelTitle = '소지섭';
+								break;
+							case '레드벨벳 슬기':
+								labelTitle = '레드벨벳 슬기';
+								break;
+							case '싸이':
+								labelTitle = '싸이';
+								break;
+							case '아이린':
+								labelTitle = '아이린';
+								break;
+							case '아이유':
+								labelTitle = '아이유';
+								break;
+							case '양세형':
+								labelTitle = '양세형';
+								break;
+							case '오나미':
+								labelTitle = '오나미';
+								break;
+							case '에스파 윈터':
+								labelTitle = '에스파 윈터';
+								break;
+							case '오달수':
+								labelTitle = '오달수';
+								break;
+							case '원빈':
+								labelTitle = '원빈';
+								break;
+							case '유재석':
+								labelTitle = '유재석';
+								break;
+							case '유해진':
+								labelTitle = '유해진';
+								break;
+							case '은지원':
+								labelTitle = '은지원';
+								break;
+							case '이국주':
+								labelTitle = '이국주';
+								break;
+							case '신봉선':
+								labelTitle = '신봉선';
+								break;
+							case '이다희':
+								labelTitle = '이다희';
+								break;
+							case '이동휘':
+								labelTitle = '이동휘';
+								break;
+							case '이수지':
+								labelTitle = '이수지';
+								break;
+							case '조달환':
+								labelTitle = '조달환';
+								break;
+							case '조병규':
+								labelTitle = '조병규';
+								break;
+							case '정두홍':
+								labelTitle = '정두홍';
+								break;
+							case '정연':
+								labelTitle = '정연';
+								break;
+							case '제니':
+								labelTitle = '제니';
+								break;
+							case '쯔위':
+								labelTitle = '쯔위';
+								break;
+							case '조승우':
+								labelTitle = '조승우';
+								break;
+							case '조희봉':
+								labelTitle = '조희봉';
+								break;
+							case '정해균':
+								labelTitle = '정해균';
+								break;
+							case '추성훈':
+								labelTitle = '추성훈';
+								break;
+							case '탁재훈':
+								labelTitle = '탁재훈';
+								break;
+							case '모모':
+								labelTitle = '모모';
+								break;
+							case '전현무':
+								labelTitle = '전현무';
+								break;
+							case '한혜진':
+								labelTitle = '한혜진';
+								break;
+							case '태연':
+								labelTitle = '태연';
+								break;
+							case '혜리':
+								labelTitle = '혜리';
+								break;
+							case '황광희':
+								labelTitle = '황광희';
+								break;
+							case '황정민':
+								labelTitle = '황정민';
+								break;
+						}
+					} else break;
+					var label =
+						"<div class='animal-label d-flex align-items-center'>" +
+						labelTitle +
+						'</div>';
+					var bar =
+						"<div class='bar-container position-relative container'><div class='" +
+						prediction[i].className +
+						"-box'></div><div class='d-flex justify-content-center align-items-center " +
+						prediction[i].className +
+						"-bar' style='width: " +
+						barWidth +
+						"'><span class='d-block percent-text'>" +
+						Math.round(prediction[i].probability.toFixed(2) * 100) +
+						'%</span></div></div>';
+					labelContainer.childNodes[i].innerHTML = label + bar;
+				}
+			}
+		</script>
+	</body>
+</html>
