@@ -133,12 +133,20 @@ body {
 	margin-top: 100px;
 }
 
-.warning{
+.clubname{
+	font-family: NanumSquareR;
+	line-height: 1.67;
+	text-align: center;
+	color: #000000;
+	
+}
+
+/*.warning{
 	font-family: NanumSquareR;
 	line-height: 1.67;
 	text-align: center;
 	color: #35465d;
-}
+}*/
 
 .title{
 	font-family: NanumSquareR;
